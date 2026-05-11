@@ -1278,6 +1278,8 @@
     .orbital-wrap { min-height: 132vh; }
     .orbital-copy { padding-right: 1rem; }
     .orbital-meta { position: absolute; left: 1rem; right: 1rem; top: auto; bottom: 1rem; width: auto; }
+    .orbital-card { opacity: 0 !important; }
+    .orbital-card.is-active { opacity: 1 !important; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1906,6 +1908,7 @@
   let orbitalLoopRaf = 0;
   let orbitalInView = false;
   const isPhoneViewport = window.matchMedia("(max-width: 1024px)").matches;
+  const disableOrbitalHeavyMotion = isPhoneViewport;
 
   function updateOrbitalContent(index) {
     if (index === activeOrbitalIndex && orbitalTitle.textContent) return;
@@ -1922,7 +1925,7 @@
     const radiusX = compactViewport ? 158 : 330;
     const radiusZ = compactViewport ? 220 : 440;
     const verticalWave = compactViewport ? 22 : 54;
-    const smoothing = prefersReducedMotion ? 1 : 0.16;
+    const smoothing = (prefersReducedMotion || disableOrbitalHeavyMotion) ? 1 : 0.16;
     orbitalRotation += (orbitalTargetRotation - orbitalRotation) * smoothing;
     if (compactViewport) {
       orbitalStage.style.transform = "perspective(1800px) rotateX(0deg) rotateY(0deg)";
@@ -1961,8 +1964,8 @@
     cardStates.forEach((state) => {
       const { card, index, x, y, z, rotateX, rotateY, scale, opacity, depthNorm } = state;
       const isActive = index === nearestIndex;
-      const mobileOpacity = isActive ? 1 : 0.08;
-      const mobileScale = isActive ? scale : Math.max(0.78, scale - 0.08);
+      const mobileOpacity = isActive ? 1 : 0;
+      const mobileScale = isActive ? scale : 0.74;
 
       card.style.zIndex = String(Math.round(depthNorm * 100));
       card.style.opacity = (mobileView ? mobileOpacity : opacity).toFixed(3);
@@ -1972,7 +1975,7 @@
 
     updateOrbitalContent(nearestIndex);
 
-    if (!prefersReducedMotion && Math.abs(orbitalTargetRotation - orbitalRotation) > 0.0015) {
+    if (!prefersReducedMotion && !disableOrbitalHeavyMotion && Math.abs(orbitalTargetRotation - orbitalRotation) > 0.0015) {
       scheduleOrbitalRender();
     }
   }
@@ -1997,7 +2000,7 @@
     if (!lastOrbitalTime) lastOrbitalTime = now;
     const dt = Math.min(48, now - lastOrbitalTime);
     lastOrbitalTime = now;
-    if (!prefersReducedMotion && orbitalInView && !document.hidden) {
+    if (!prefersReducedMotion && !disableOrbitalHeavyMotion && orbitalInView && !document.hidden) {
       const speed = isPhoneViewport ? 0.00065 : 0.0003;
       orbitalAutoRotation += dt * speed;
       orbitalTargetRotation = orbitalScrollRotation + orbitalAutoRotation;
@@ -2019,6 +2022,10 @@
       scheduleOrbitalRender();
     });
 
+    if (disableOrbitalHeavyMotion) {
+      orbitalTargetRotation = 0;
+      orbitalRotation = 0;
+    }
     renderOrbitalWheel();
     updateOrbitalContent(0);
   }
@@ -2071,7 +2078,7 @@
   }, { passive: true });
   lenis.on("scroll", () => {
     scheduleProgress();
-    scheduleOrbitalRender();
+    if (!disableOrbitalHeavyMotion) scheduleOrbitalRender();
   });
 
   window.addEventListener("load", () => {
@@ -2082,7 +2089,7 @@
     });
     updateProgress();
     setScene("intro");
-    scheduleOrbitalRender();
+    if (!disableOrbitalHeavyMotion) scheduleOrbitalRender();
     if (window.location.hash) setBottomActive(window.location.hash);
   });
 
