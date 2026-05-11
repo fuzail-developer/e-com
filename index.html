@@ -123,6 +123,11 @@
     filter: contrast(1.08) saturate(1.08);
   }
 
+  @media (max-width: 720px) {
+    .swarm-bg { opacity: 0.9; }
+    .swarm-bg canvas { filter: contrast(1.2) saturate(1.35) brightness(1.12); }
+  }
+
   .scene-progress span {
     display: block;
     width: 100%;
@@ -1634,7 +1639,7 @@
   const mount = document.getElementById("swarmBg");
   if (mount) {
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x000000, lowPower ? 0.012 : 0.008);
+    scene.fog = new THREE.FogExp2(0x000000, isMobileDevice ? 0.0072 : (lowPower ? 0.012 : 0.008));
     const camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 1400);
     camera.position.set(0, 0, 132);
 
@@ -1657,8 +1662,8 @@
     const color = new THREE.Color();
     const target = new THREE.Vector3();
 
-    const geometry = new THREE.TetrahedronGeometry(lowPower ? 0.2 : 0.22);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: lowPower ? 0.86 : 0.9 });
+    const geometry = new THREE.TetrahedronGeometry(isMobileDevice ? 0.24 : (lowPower ? 0.2 : 0.22));
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: isMobileDevice ? 0.98 : (lowPower ? 0.86 : 0.9) });
     const instancedMesh = new THREE.InstancedMesh(geometry, material, COUNT);
     instancedMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     scene.add(instancedMesh);
@@ -1719,7 +1724,7 @@
         instancedMesh.setMatrixAt(i, dummy.matrix);
 
         const h = (0.58 + 0.18 * Math.sin(a * 0.7 + z * 0.05) + time * 0.02) % 1.0;
-        const l = 0.34 + 0.2 * ridge + 0.07 * Math.sin(z * 0.2 + a);
+        const l = (isMobileDevice ? 0.46 : 0.34) + 0.2 * ridge + 0.07 * Math.sin(z * 0.2 + a);
         color.setHSL(h, 0.8, l);
         instancedMesh.setColorAt(i, color);
       }
