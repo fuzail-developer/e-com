@@ -1229,8 +1229,8 @@
     .hero-panel { min-height: 620px; }
     .timeline, .stats-grid, .industry-grid, .why-grid, .testimonials { grid-template-columns: repeat(2, 1fr); }
     .service-card { grid-column: span 6; }
-    .orbital-copy { position: relative; left: auto; top: auto; padding: 1.5rem 1.5rem 0; max-width: 100%; }
-    .orbital-meta { top: auto; right: 1.5rem; bottom: 1.5rem; }
+    .orbital-copy { position: relative; left: auto; top: auto; padding: 1.5rem 1.5rem 0; max-width: 100%; z-index: 8; }
+    .orbital-meta { top: auto; right: 1.5rem; bottom: 1.5rem; z-index: 8; }
     .orbital-card { width: min(44vw, 380px); }
   }
 
@@ -1241,22 +1241,22 @@
     .hero-title { font-size: clamp(2.9rem, 15vw, 4.5rem); }
     .service-grid, .timeline, .stats-grid, .industry-grid, .why-grid, .testimonials { grid-template-columns: 1fr; }
     .service-card { grid-column: span 12; }
-    .hero-panel { min-height: 760px; border-radius: 28px; }
+    .hero-panel { min-height: 640px; border-radius: 28px; }
     .hero-panel .panel-orbit { animation: none !important; transform: none !important; }
     .hero-panel .panel-card {
       left: 1rem !important;
       right: 1rem !important;
       width: auto !important;
     }
-    .hero-panel .panel-card:nth-of-type(3) { top: 1rem !important; bottom: auto !important; }
-    .hero-panel .panel-card:nth-of-type(4) { top: 13.2rem !important; bottom: auto !important; }
-    .hero-panel .panel-card:nth-of-type(5) { top: 26.1rem !important; bottom: auto !important; }
+    .hero-panel .panel-card.orbit-1 { top: 0.9rem !important; bottom: auto !important; }
+    .hero-panel .panel-card.orbit-2 { top: 12.3rem !important; bottom: auto !important; }
+    .hero-panel .panel-card.orbit-3 { top: 22.8rem !important; bottom: auto !important; }
     .hero-panel .float-corner {
       left: 1rem !important;
       right: auto !important;
-      bottom: 1rem !important;
+      bottom: 0.8rem !important;
     }
-    .hero-panel .panel-card .big { font-size: clamp(1.05rem, 7.4vw, 2rem); line-height: 1.08; }
+    .hero-panel .panel-card .big { font-size: clamp(1.05rem, 7.2vw, 1.95rem); line-height: 1.06; }
     .map iframe { min-height: 360px; }
     .orbital-wrap { min-height: 124vh; }
     .orbital-sticky { top: 78px; min-height: calc(82vh - 44px); }
@@ -1272,6 +1272,12 @@
     .orbital-card.is-active { pointer-events: auto; }
     .panel-orbit { --orbit-x: 7px; --orbit-y: 5px; }
     .panel-orbit.orbit-3 { --orbit-x: 9px; --orbit-y: 6px; }
+  }
+
+  @media (max-width: 1024px) {
+    .orbital-wrap { min-height: 132vh; }
+    .orbital-copy { padding-right: 1rem; }
+    .orbital-meta { position: absolute; left: 1rem; right: 1rem; top: auto; bottom: 1rem; width: auto; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1899,7 +1905,7 @@
   let orbitalRaf = 0;
   let orbitalLoopRaf = 0;
   let orbitalInView = false;
-  const isPhoneViewport = window.matchMedia("(max-width: 720px)").matches;
+  const isPhoneViewport = window.matchMedia("(max-width: 1024px)").matches;
 
   function updateOrbitalContent(index) {
     if (index === activeOrbitalIndex && orbitalTitle.textContent) return;
@@ -1912,12 +1918,13 @@
   }
 
   function renderOrbitalWheel() {
-    const radiusX = window.innerWidth < 720 ? 170 : 330;
-    const radiusZ = window.innerWidth < 720 ? 235 : 440;
-    const verticalWave = window.innerWidth < 720 ? 26 : 54;
+    const compactViewport = window.innerWidth < 1024;
+    const radiusX = compactViewport ? 158 : 330;
+    const radiusZ = compactViewport ? 220 : 440;
+    const verticalWave = compactViewport ? 22 : 54;
     const smoothing = prefersReducedMotion ? 1 : 0.16;
     orbitalRotation += (orbitalTargetRotation - orbitalRotation) * smoothing;
-    if (window.innerWidth < 720) {
+    if (compactViewport) {
       orbitalStage.style.transform = "perspective(1800px) rotateX(0deg) rotateY(0deg)";
     } else {
       orbitalStage.style.transform = `perspective(1800px) rotateX(${orbitalMouseY * -2.5}deg) rotateY(${orbitalMouseX * 4}deg)`;
@@ -1926,7 +1933,7 @@
     let nearestIndex = 0;
     let nearestDepth = -Infinity;
 
-    const mobileView = window.innerWidth < 720;
+    const mobileView = compactViewport;
     const cardStates = [];
 
     orbitalCards.forEach((card, index) => {
