@@ -471,6 +471,36 @@
     box-shadow: 0 24px 70px rgba(0,0,0,0.35);
   }
 
+  .panel-orbit {
+    --orbit-x: 14px;
+    --orbit-y: 10px;
+    --orbit-speed: 16s;
+    --orbit-delay: 0s;
+    animation: panelOrbit var(--orbit-speed) linear var(--orbit-delay) infinite;
+    will-change: transform;
+  }
+
+  .panel-orbit.orbit-2 {
+    --orbit-x: 11px;
+    --orbit-y: 8px;
+    --orbit-speed: 13.5s;
+    --orbit-delay: -2.2s;
+  }
+
+  .panel-orbit.orbit-3 {
+    --orbit-x: 16px;
+    --orbit-y: 12px;
+    --orbit-speed: 18s;
+    --orbit-delay: -5.4s;
+  }
+
+  .panel-orbit.orbit-corner {
+    --orbit-x: 12px;
+    --orbit-y: 9px;
+    --orbit-speed: 14.5s;
+    --orbit-delay: -3.4s;
+  }
+
   .panel-card .eyebrow {
     font-size: 0.68rem;
     letter-spacing: 0.28em;
@@ -500,6 +530,14 @@
 
   .floating-chip.float-corner {
     position: absolute;
+  }
+
+  @keyframes panelOrbit {
+    0% { transform: translate3d(var(--orbit-x), 0, 0); }
+    25% { transform: translate3d(0, var(--orbit-y), 0); }
+    50% { transform: translate3d(calc(var(--orbit-x) * -1), 0, 0); }
+    75% { transform: translate3d(0, calc(var(--orbit-y) * -1), 0); }
+    100% { transform: translate3d(var(--orbit-x), 0, 0); }
   }
 
   .section {
@@ -1123,10 +1161,14 @@
     text-align: center;
     font-size: 0.74rem;
     color: rgba(244,247,251,0.8);
+    transition: background 0.22s ease, color 0.22s ease, transform 0.2s ease;
   }
   .bottom-nav a.active {
     background: linear-gradient(135deg, rgba(78,167,255,0.95), rgba(255,138,61,0.9));
     color: #fff;
+  }
+  .bottom-nav a:active {
+    transform: scale(0.98);
   }
 
   .reveal {
@@ -1200,9 +1242,14 @@
     .orbital-sticky { top: 78px; min-height: calc(82vh - 44px); }
     .orbital-stage { min-height: calc(82vh - 44px); }
     .orbital-copy h3 { font-size: clamp(1.8rem, 10vw, 3rem); }
+    .orbital-copy p { font-size: 0.96rem; line-height: 1.55; }
     .orbital-meta { position: absolute; left: 1rem; right: 1rem; top: auto; bottom: 1rem; width: auto; }
     .orbital-ring { width: min(92vw, 540px); height: min(92vw, 540px); top: 52%; }
     .orbital-card { min-width: 250px; width: min(78vw, 320px); min-height: 350px; top: 52%; }
+    .orbital-stage { transform: none !important; }
+    .orbital-card { transition: transform 0.2s linear, opacity 0.2s linear; }
+    .panel-orbit { --orbit-x: 7px; --orbit-y: 5px; }
+    .panel-orbit.orbit-3 { --orbit-x: 9px; --orbit-y: 6px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1270,15 +1317,15 @@
             <div class="hero-film"></div>
             <div class="machine-silhouette left"></div>
             <div class="machine-silhouette right"></div>
-            <div class="panel-card" style="left: 1.2rem; top: 1.2rem; width: min(84%, 340px); padding: 1rem 1.05rem;">
+            <div class="panel-card panel-orbit orbit-1" style="left: 1.2rem; top: 1.2rem; width: min(84%, 340px); padding: 1rem 1.05rem;">
               <div class="eyebrow">Production confidence</div>
               <div class="big" style="margin-top: .5rem;">Government-ready graphics, precision cut decals, and durable finishes.</div>
             </div>
-            <div class="panel-card" style="right: 1.2rem; top: 10.2rem; width: min(74%, 280px); padding: 1rem 1.05rem;">
+            <div class="panel-card panel-orbit orbit-2" style="right: 1.2rem; top: 10.2rem; width: min(74%, 280px); padding: 1rem 1.05rem;">
               <div class="eyebrow">Lead time</div>
               <div class="big" style="margin-top: .45rem;">Fast-turn premium output</div>
             </div>
-            <div class="panel-card" style="left: 2rem; bottom: 1.8rem; width: min(78%, 380px); padding: 1rem 1.05rem;">
+            <div class="panel-card panel-orbit orbit-3" style="left: 2rem; bottom: 1.8rem; width: min(78%, 380px); padding: 1rem 1.05rem;">
               <div class="eyebrow">Core category mix</div>
               <div style="margin-top:.7rem; display:flex; flex-wrap:wrap; gap:.5rem;">
                 <span class="floating-chip">Vehicle Decals</span>
@@ -1287,7 +1334,7 @@
                 <span class="floating-chip">Battery Insulation</span>
               </div>
             </div>
-            <div class="floating-chip float-corner" style="right: 1.2rem; bottom: 1.15rem;">
+            <div class="floating-chip float-corner panel-orbit orbit-corner" style="right: 1.2rem; bottom: 1.15rem;">
               <span style="width:10px;height:10px;border-radius:999px;background:linear-gradient(135deg,var(--blue),var(--orange));box-shadow:0 0 16px rgba(78,167,255,.9)"></span>
               <span>Industrial luxe interface</span>
             </div>
@@ -1579,8 +1626,9 @@
   import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const lowPower = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
-  const COUNT = reducedMotion ? 1000 : (lowPower ? 1700 : 3800);
+  const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const lowPower = isMobileDevice || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+  const COUNT = reducedMotion ? 800 : (isMobileDevice ? 980 : (lowPower ? 1500 : 3800));
   const SPEED_MULT = reducedMotion ? 0.42 : (lowPower ? 0.66 : 0.86);
 
   const mount = document.getElementById("swarmBg");
@@ -1591,17 +1639,19 @@
     camera.position.set(0, 0, 132);
 
     const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true, powerPreference: "high-performance" });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 1.25 : 1.7));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobileDevice ? 1.1 : (lowPower ? 1.25 : 1.7)));
     renderer.setSize(window.innerWidth, window.innerHeight);
     mount.appendChild(renderer.domElement);
 
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), lowPower ? 0.34 : 0.5, 0.1, 0.24);
-    bloomPass.strength = lowPower ? 0.22 : 0.3;
-    bloomPass.radius = lowPower ? 0.1 : 0.12;
-    bloomPass.threshold = 0.16;
-    composer.addPass(bloomPass);
+    if (!isMobileDevice) {
+      const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), lowPower ? 0.34 : 0.5, 0.1, 0.24);
+      bloomPass.strength = lowPower ? 0.22 : 0.3;
+      bloomPass.radius = lowPower ? 0.1 : 0.12;
+      bloomPass.threshold = 0.16;
+      composer.addPass(bloomPass);
+    }
 
     const dummy = new THREE.Object3D();
     const color = new THREE.Color();
@@ -1624,6 +1674,7 @@
 
     function animate() {
       rafId = requestAnimationFrame(animate);
+      if (document.hidden) return;
       const time = clock.getElapsedTime() * SPEED_MULT;
       const count = COUNT;
 
@@ -1683,7 +1734,7 @@
     function onResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, lowPower ? 1.25 : 1.7));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobileDevice ? 1.1 : (lowPower ? 1.25 : 1.7)));
       renderer.setSize(window.innerWidth, window.innerHeight);
       composer.setSize(window.innerWidth, window.innerHeight);
     }
@@ -1817,10 +1868,16 @@
   const orbitalCounter = document.getElementById("orbitalCounter");
   let orbitalRotation = 0;
   let orbitalTargetRotation = 0;
+  let orbitalScrollRotation = 0;
+  let orbitalAutoRotation = 0;
+  let lastOrbitalTime = 0;
   let orbitalMouseX = 0;
   let orbitalMouseY = 0;
   let activeOrbitalIndex = 0;
   let orbitalRaf = 0;
+  let orbitalLoopRaf = 0;
+  let orbitalInView = false;
+  const isPhoneViewport = window.matchMedia("(max-width: 720px)").matches;
 
   function updateOrbitalContent(index) {
     if (index === activeOrbitalIndex && orbitalTitle.textContent) return;
@@ -1833,12 +1890,16 @@
   }
 
   function renderOrbitalWheel() {
-    const radiusX = window.innerWidth < 720 ? 185 : 330;
-    const radiusZ = window.innerWidth < 720 ? 250 : 440;
-    const verticalWave = window.innerWidth < 720 ? 34 : 54;
+    const radiusX = window.innerWidth < 720 ? 170 : 330;
+    const radiusZ = window.innerWidth < 720 ? 235 : 440;
+    const verticalWave = window.innerWidth < 720 ? 26 : 54;
     const smoothing = prefersReducedMotion ? 1 : 0.16;
     orbitalRotation += (orbitalTargetRotation - orbitalRotation) * smoothing;
-    orbitalStage.style.transform = `perspective(1800px) rotateX(${orbitalMouseY * -2.5}deg) rotateY(${orbitalMouseX * 4}deg)`;
+    if (window.innerWidth < 720) {
+      orbitalStage.style.transform = "perspective(1800px) rotateX(0deg) rotateY(0deg)";
+    } else {
+      orbitalStage.style.transform = `perspective(1800px) rotateX(${orbitalMouseY * -2.5}deg) rotateY(${orbitalMouseX * 4}deg)`;
+    }
 
     let nearestIndex = 0;
     let nearestDepth = -Infinity;
@@ -1884,10 +1945,24 @@
         const total = rect.height - window.innerHeight;
         const scrolled = Math.min(Math.max(-rect.top, 0), Math.max(total, 0));
         const progress = total > 0 ? scrolled / total : 0;
-        orbitalTargetRotation = progress * Math.PI * 4.25;
+        orbitalScrollRotation = progress * Math.PI * 4.25;
+        orbitalTargetRotation = orbitalScrollRotation + orbitalAutoRotation;
       }
       renderOrbitalWheel();
     });
+  }
+
+  function orbitalLoop(now) {
+    if (!lastOrbitalTime) lastOrbitalTime = now;
+    const dt = Math.min(48, now - lastOrbitalTime);
+    lastOrbitalTime = now;
+    if (!prefersReducedMotion && orbitalInView && !document.hidden) {
+      const speed = isPhoneViewport ? 0.00065 : 0.0003;
+      orbitalAutoRotation += dt * speed;
+      orbitalTargetRotation = orbitalScrollRotation + orbitalAutoRotation;
+      renderOrbitalWheel();
+    }
+    orbitalLoopRaf = requestAnimationFrame(orbitalLoop);
   }
 
   if (orbitalStage && orbitalWheel) {
@@ -1907,6 +1982,16 @@
     updateOrbitalContent(0);
   }
 
+  if (orbitalWrap) {
+    const orbitalVisibilityObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.target !== orbitalWrap) return;
+        orbitalInView = entry.isIntersecting;
+      });
+    }, { threshold: 0.12 });
+    orbitalVisibilityObserver.observe(orbitalWrap);
+  }
+
   const storySections = document.querySelectorAll("[data-scene]");
   const sceneObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
@@ -1920,10 +2005,23 @@
   const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
-      bottomLinks.forEach((link) => link.classList.toggle("active", link.getAttribute("href") === "#" + entry.target.id));
+      setBottomActive("#" + entry.target.id);
     });
   }, { threshold: 0.5 });
   sections.forEach((sec) => sec && sectionObserver.observe(sec));
+
+  function setBottomActive(targetHash) {
+    bottomLinks.forEach((link) => {
+      link.classList.toggle("active", link.getAttribute("href") === targetHash);
+    });
+  }
+
+  bottomLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      const targetHash = link.getAttribute("href");
+      if (targetHash) setBottomActive(targetHash);
+    });
+  });
 
   window.addEventListener("scroll", scheduleProgress, { passive: true });
   window.addEventListener("resize", () => {
@@ -1944,6 +2042,15 @@
     updateProgress();
     setScene("intro");
     scheduleOrbitalRender();
+    if (window.location.hash) setBottomActive(window.location.hash);
+  });
+
+  if (orbitalStage && orbitalWheel) {
+    orbitalLoopRaf = requestAnimationFrame(orbitalLoop);
+  }
+
+  window.addEventListener("beforeunload", () => {
+    if (orbitalLoopRaf) cancelAnimationFrame(orbitalLoopRaf);
   });
 </script>
 </body>
