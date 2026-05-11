@@ -1241,7 +1241,22 @@
     .hero-title { font-size: clamp(2.9rem, 15vw, 4.5rem); }
     .service-grid, .timeline, .stats-grid, .industry-grid, .why-grid, .testimonials { grid-template-columns: 1fr; }
     .service-card { grid-column: span 12; }
-    .hero-panel { min-height: 480px; border-radius: 28px; }
+    .hero-panel { min-height: 760px; border-radius: 28px; }
+    .hero-panel .panel-orbit { animation: none !important; transform: none !important; }
+    .hero-panel .panel-card {
+      left: 1rem !important;
+      right: 1rem !important;
+      width: auto !important;
+    }
+    .hero-panel .panel-card:nth-of-type(3) { top: 1rem !important; bottom: auto !important; }
+    .hero-panel .panel-card:nth-of-type(4) { top: 13.2rem !important; bottom: auto !important; }
+    .hero-panel .panel-card:nth-of-type(5) { top: 26.1rem !important; bottom: auto !important; }
+    .hero-panel .float-corner {
+      left: 1rem !important;
+      right: auto !important;
+      bottom: 1rem !important;
+    }
+    .hero-panel .panel-card .big { font-size: clamp(1.05rem, 7.4vw, 2rem); line-height: 1.08; }
     .map iframe { min-height: 360px; }
     .orbital-wrap { min-height: 124vh; }
     .orbital-sticky { top: 78px; min-height: calc(82vh - 44px); }
@@ -1253,6 +1268,8 @@
     .orbital-card { min-width: 250px; width: min(78vw, 320px); min-height: 350px; top: 52%; }
     .orbital-stage { transform: none !important; }
     .orbital-card { transition: transform 0.2s linear, opacity 0.2s linear; }
+    .orbital-card { pointer-events: none; }
+    .orbital-card.is-active { pointer-events: auto; }
     .panel-orbit { --orbit-x: 7px; --orbit-y: 5px; }
     .panel-orbit.orbit-3 { --orbit-x: 9px; --orbit-y: 6px; }
   }
@@ -1909,6 +1926,9 @@
     let nearestIndex = 0;
     let nearestDepth = -Infinity;
 
+    const mobileView = window.innerWidth < 720;
+    const cardStates = [];
+
     orbitalCards.forEach((card, index) => {
       const base = (Math.PI * 2 * index) / orbitalCards.length;
       const angle = base + orbitalRotation;
@@ -1928,10 +1948,19 @@
         nearestIndex = index;
       }
 
+      cardStates.push({ card, index, x, y, z, rotateX, rotateY, scale, opacity, depthNorm });
+    });
+
+    cardStates.forEach((state) => {
+      const { card, index, x, y, z, rotateX, rotateY, scale, opacity, depthNorm } = state;
+      const isActive = index === nearestIndex;
+      const mobileOpacity = isActive ? 1 : 0.08;
+      const mobileScale = isActive ? scale : Math.max(0.78, scale - 0.08);
+
       card.style.zIndex = String(Math.round(depthNorm * 100));
-      card.style.opacity = opacity.toFixed(3);
-      card.style.transform = `translate3d(calc(-50% + ${x.toFixed(1)}px), calc(-50% + ${y.toFixed(1)}px), ${z.toFixed(1)}px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
-      card.classList.toggle("is-active", index === nearestIndex);
+      card.style.opacity = (mobileView ? mobileOpacity : opacity).toFixed(3);
+      card.style.transform = `translate3d(calc(-50% + ${x.toFixed(1)}px), calc(-50% + ${y.toFixed(1)}px), ${z.toFixed(1)}px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale(${(mobileView ? mobileScale : scale).toFixed(3)})`;
+      card.classList.toggle("is-active", isActive);
     });
 
     updateOrbitalContent(nearestIndex);
